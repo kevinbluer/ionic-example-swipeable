@@ -1,72 +1,63 @@
+
 // Ionic Starter App
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-angular.module('ionicApp', ['ionic', 'ngResource'])
+// 'starter.services' is found in services.js
+// 'starter.controllers' is found in controllers.js
+// Ionic Starter App
 
-.factory('Flickr', function($resource, $q) {
-  var photosPublic = $resource('http://api.flickr.com/services/feeds/photos_public.gne', 
-      { format: 'json', jsoncallback: 'JSON_CALLBACK' }, 
-      { 'load': { 'method': 'JSONP' } });
-      
-  return {
-    search: function(query) {
-      var q = $q.defer();
-      photosPublic.load({
-        tags: query
-      }, function(resp) {
-        q.resolve(resp);
-      }, function(err) {
-        q.reject(err);
-      })
-      
-      return q.promise;
-    }
-  }
-})
+// angular.module is a global place for creating, registering and retrieving Angular modules
+// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
+// the 2nd parameter is an array of 'requires'
+// 'starter.services' is found in services.js
+// 'starter.controllers' is found in controllers.js
+angular.module('starter', ['ionic', 'ionic.contrib.ui.cards'])
 
-.controller('FlickrCtrl', function($scope, Flickr) {
+.directive('noScroll', function($document) {
 
-  var doSearch = ionic.debounce(function(query) {
-    Flickr.search(query).then(function(resp) {
-      $scope.photos = resp;
-    });
-  }, 500);
-  
-  $scope.search = function() {
-    doSearch($scope.query);
-  }
-
-})
-
-.directive('pushSearch', function() {
   return {
     restrict: 'A',
     link: function($scope, $element, $attr) {
-      var amt, st, header;
 
-      $element.bind('scroll', function(e) {
-        if(!header) {
-          header = document.getElementById('search-bar');
-        }
-        st = e.detail.scrollTop;
-        if(st < 0) {
-          header.style.webkitTransform = 'translate3d(0, 0px, 0)';
-        } else {
-          header.style.webkitTransform = 'translate3d(0, ' + -st + 'px, 0)';
-        }
+      $document.on('touchmove', function(e) {
+        e.preventDefault();
       });
     }
   }
 })
 
-.directive('photo', function($window) {
-  return {
-    restrict: 'C',
-    link: function($scope, $element, $attr) {
-      var size = ($window.outerWidth / 3) - 2;
-      $element.css('width', size + 'px');
-    }
+.controller('CardsCtrl', function($scope, $ionicSwipeCardDelegate) {
+  var cardTypes = [
+    { title: 'Swipe down to clear the card', image: 'http://ionicframework.com.s3.amazonaws.com/demos/ionic-contrib-swipecards/pic.png' },
+    { title: 'Where is this?', image: 'http://ionicframework.com.s3.amazonaws.com/demos/ionic-contrib-swipecards/pic.png' },
+    { title: 'What kind of grass is this?', image: 'http://ionicframework.com.s3.amazonaws.com/demos/ionic-contrib-swipecards/pic2.png' },
+    { title: 'What beach is this?', image: 'http://ionicframework.com.s3.amazonaws.com/demos/ionic-contrib-swipecards/pic3.png' },
+    { title: 'What kind of clouds are these?', image: 'http://ionicframework.com.s3.amazonaws.com/demos/ionic-contrib-swipecards/pic4.png' }
+  ];
+
+  $scope.cards = Array.prototype.slice.call(cardTypes, 0, 0);
+
+  $scope.cardSwiped = function(index) {
+    $scope.addCard();
+  };
+
+  $scope.cardDestroyed = function(index) {
+    $scope.cards.splice(index, 1);
+  };
+
+  $scope.addCard = function() {
+    var newCard = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+    newCard.id = Math.random();
+    $scope.cards.push(angular.extend({}, newCard));
   }
+})
+
+.controller('CardCtrl', function($scope, $ionicSwipeCardDelegate) {
+  $scope.goAway = function() {
+    var card = $ionicSwipeCardDelegate.getSwipebleCard($scope);
+    card.swipe();
+  };
 });
+
